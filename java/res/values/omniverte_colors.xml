@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OmniVerte: launcher icon background (desktop OmniVerte teal). -->
+<resources>
+    <color name="omniverte_ic_background">#00A8A8</color>
+</resources>

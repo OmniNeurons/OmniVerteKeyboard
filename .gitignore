@@ -13,3 +13,13 @@ java/res/raw/mozc.data
 java/src/org/futo/inputmethod/keyboard/internal/KeyboardTextsTable.java
 
 atl/
+
+
+# Notes / tooling
+_notes/
+.claude
+.claude_other_files/
+.grok
+CLAUDE.md
+AGENTS.md
+TODO.md

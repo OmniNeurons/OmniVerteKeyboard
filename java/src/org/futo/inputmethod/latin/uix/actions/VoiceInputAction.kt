@@ -37,6 +37,9 @@ import org.futo.inputmethod.latin.uix.CAN_EXPAND_SPACE
 import org.futo.inputmethod.latin.uix.CloseResult
 import org.futo.inputmethod.latin.uix.DISALLOW_SYMBOLS
 import org.futo.inputmethod.latin.uix.ENABLE_SOUND
+import org.futo.inputmethod.latin.uix.GEMINI_CLEAN_FILLERS
+import org.futo.inputmethod.latin.uix.GEMINI_SILENCE_STOP_SECONDS
+import org.futo.inputmethod.latin.uix.GEMINI_VOICE_ENABLED
 import org.futo.inputmethod.latin.uix.KeyboardManagerForAction
 import org.futo.inputmethod.latin.uix.PREFER_BLUETOOTH
 import org.futo.inputmethod.latin.uix.PersistentActionState
@@ -145,6 +148,8 @@ private class VoiceInputActionWindow(
         val useVAD = context.getSetting(USE_VAD_AUTOSTOP)
         val usePersonalDict = context.getSetting(USE_PERSONAL_DICT)
         val animateBubble = context.getSetting(ANIMATE_BUBBLE)
+        val cleanFillers = context.getSetting(GEMINI_CLEAN_FILLERS)
+        val silenceStopSeconds = context.getSetting(GEMINI_SILENCE_STOP_SECONDS)
 
         // OmniVerte: without a model the run configuration needs a placeholder;
         // GeminiConfig.whisperFallback = false keeps AudioRecognizer off it.
@@ -185,6 +190,8 @@ private class VoiceInputActionWindow(
                     // so mixed speech works without switching layouts.
                     languages = (locales + enabledLocales()).map { it.language }.distinct(),
                     vocabulary = glossary,
+                    cleanFillers = cleanFillers,
+                    silenceStopMs = silenceStopSeconds * 1000L,
                     whisperFallback = model != null
                 )
             }
@@ -338,7 +345,9 @@ val VoiceInputAction = Action(icon = R.drawable.mic_fill,
         val locales = manager.getActiveLocales()
 
         val model = ResourceHelper.tryFindingVoiceInputModelForLocale(manager.getContext(), locales.firstOrNull() ?: Locale.ROOT)
-        val geminiApiKey = GeminiVoiceKey.read(manager.getContext())
+        val geminiApiKey = if (manager.getContext().getSettingBlocking(GEMINI_VOICE_ENABLED)) {
+            GeminiVoiceKey.read(manager.getContext())
+        } else null
 
         if(model == null && geminiApiKey == null) {
             VoiceInputNoModelWindow(locales.firstOrNull() ?: Locale.ROOT)

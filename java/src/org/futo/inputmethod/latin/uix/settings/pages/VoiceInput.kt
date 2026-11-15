@@ -13,6 +13,9 @@ import org.futo.inputmethod.latin.uix.AUDIO_FOCUS
 import org.futo.inputmethod.latin.uix.CAN_EXPAND_SPACE
 import org.futo.inputmethod.latin.uix.DISALLOW_SYMBOLS
 import org.futo.inputmethod.latin.uix.ENABLE_SOUND
+import org.futo.inputmethod.latin.uix.GEMINI_CLEAN_FILLERS
+import org.futo.inputmethod.latin.uix.GEMINI_SILENCE_STOP_SECONDS
+import org.futo.inputmethod.latin.uix.GEMINI_VOICE_ENABLED
 import org.futo.inputmethod.latin.uix.PREFER_BLUETOOTH
 import org.futo.inputmethod.latin.uix.SYSTEM_VOICE_INPUT_PACKAGE
 import org.futo.inputmethod.latin.uix.USE_PERSONAL_DICT
@@ -62,6 +65,33 @@ val VoiceInputMenu = UserSettingsMenu(
             visibilityCheck = visibilityCheckNotSystemVoiceInput
         ) {
             GeminiApiKeySetting()
+        },
+
+        userSettingToggleDataStore(
+            title = R.string.omniverte_gemini_enabled,
+            subtitle = R.string.omniverte_gemini_enabled_subtitle,
+            setting = GEMINI_VOICE_ENABLED
+        ).copy(visibilityCheck = visibilityCheckNotSystemVoiceInput),
+
+        userSettingToggleDataStore(
+            title = R.string.omniverte_gemini_clean_fillers,
+            subtitle = R.string.omniverte_gemini_clean_fillers_subtitle,
+            setting = GEMINI_CLEAN_FILLERS
+        ).copy(visibilityCheck = visibilityCheckNotSystemVoiceInput),
+
+        UserSetting(
+            name = R.string.omniverte_gemini_silence_stop,
+            visibilityCheck = visibilityCheckNotSystemVoiceInput
+        ) {
+            val seconds = useDataStore(GEMINI_SILENCE_STOP_SECONDS)
+            val res = LocalResources.current
+            DropDownPickerSettingItem(
+                stringResource(R.string.omniverte_gemini_silence_stop),
+                listOf(5, 7, 10, 15),
+                seconds.value.coerceAtLeast(5),
+                { seconds.setValue(it) },
+                { res.getString(R.string.omniverte_gemini_silence_stop_value, it) }
+            )
         },
 
         UserSetting(

@@ -26,4 +26,12 @@
     <string name="omniverte_gemini_key_clipboard_empty" translatable="false">The clipboard has no text.</string>
     <string name="omniverte_gemini_key_checking" translatable="false">Checking…</string>
     <string name="omniverte_gemini_key_ok" translatable="false">The key works.</string>
+    <string name="omniverte_gemini_enabled" translatable="false">Recognize with Gemini</string>
+    <string name="omniverte_gemini_enabled_subtitle" translatable="false">Off: only the on-device Whisper model, nothing is sent to Google</string>
+    <string name="omniverte_gemini_clean_fillers" translatable="false">Remove filler sounds</string>
+    <string name="omniverte_gemini_clean_fillers_subtitle" translatable="false">Drop “uh”, “um”, “э-э” from Gemini transcripts</string>
+    <string name="omniverte_gemini_silence_stop" translatable="false">Gemini: stop after a pause of</string>
+    <string name="omniverte_gemini_silence_stop_value" translatable="false">%1$d s</string>
+    <string name="omniverte_modified_notice" translatable="false">OmniVerte Keyboard is a modified version of FUTO Keyboard, made by OmniNeurons. It is not affiliated with or endorsed by FUTO.</string>
+    <string name="omniverte_based_on" translatable="false">Voice input modelled on OmniVerte · omniverte.ai</string>
 </resources>

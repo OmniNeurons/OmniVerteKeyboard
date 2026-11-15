@@ -17,4 +17,12 @@
     <string name="omniverte_gemini_key_clipboard_empty" translatable="false">В буфере обмена нет текста.</string>
     <string name="omniverte_gemini_key_checking" translatable="false">Проверяю…</string>
     <string name="omniverte_gemini_key_ok" translatable="false">Ключ работает.</string>
+    <string name="omniverte_gemini_enabled" translatable="false">Распознавать через Gemini</string>
+    <string name="omniverte_gemini_enabled_subtitle" translatable="false">Выключено: только Whisper на устройстве, в Google ничего не уходит</string>
+    <string name="omniverte_gemini_clean_fillers" translatable="false">Убирать слова-паразиты</string>
+    <string name="omniverte_gemini_clean_fillers_subtitle" translatable="false">Удалять «э-э», «эм», «uh», «um» из текста Gemini</string>
+    <string name="omniverte_gemini_silence_stop" translatable="false">Gemini: стоп после паузы</string>
+    <string name="omniverte_gemini_silence_stop_value" translatable="false">%1$d с</string>
+    <string name="omniverte_modified_notice" translatable="false">OmniVerte Keyboard — модифицированная версия FUTO Keyboard, сделанная OmniNeurons. Не связана с FUTO и не одобрена ею.</string>
+    <string name="omniverte_based_on" translatable="false">Голосовой ввод по образцу OmniVerte · omniverte.ai</string>
 </resources>

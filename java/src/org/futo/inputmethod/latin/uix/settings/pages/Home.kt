@@ -229,6 +229,10 @@ fun HomeScreen(navController: NavHostController = rememberNavController()) {
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
+            // OmniVerte: modified-build notice (FUTO Source First License)
+            OmniVerteModifiedNotice()
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 "v${BuildConfig.VERSION_NAME}",
                 style = Typography.Small,

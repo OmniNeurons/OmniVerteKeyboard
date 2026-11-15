@@ -73,3 +73,19 @@ val ANIMATE_BUBBLE = SettingsKey(
     key = booleanPreferencesKey("animate_bubble"),
     default = true
 )
+// OmniVerte: Gemini voice engine (the API key itself lives in GeminiVoiceKey, not here)
+val GEMINI_VOICE_ENABLED = SettingsKey(
+    key = booleanPreferencesKey("omniverte_gemini_voice_enabled"),
+    default = true
+)
+
+val GEMINI_CLEAN_FILLERS = SettingsKey(
+    key = booleanPreferencesKey("omniverte_gemini_clean_fillers"),
+    default = true
+)
+
+/** VAD auto-stop pause in Gemini mode, seconds (never below 5). */
+val GEMINI_SILENCE_STOP_SECONDS = SettingsKey(
+    key = intPreferencesKey("omniverte_gemini_silence_stop_seconds"),
+    default = 5
+)
