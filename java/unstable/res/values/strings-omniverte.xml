@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- OmniVerte Keyboard: names for the dev (unstable) build. -->
 <resources>
-    <string name="omniverte_ime_name" translatable="false">OmniVerte Keyboard [Dev]</string>
-    <string name="omniverte_spell_checker_name" translatable="false">OmniVerte Spell Checker [Dev]</string>
-    <string name="omniverte_ime_settings" translatable="false">OmniVerte Keyboard Settings [Dev]</string>
-    <string name="omniverte_spell_checker_settings" translatable="false">OmniVerte Spell Checker Settings [Dev]</string>
+    <string name="omniverte_ime_name" translatable="false">OmniVerte FUTO Keyboard [Dev]</string>
+    <string name="omniverte_spell_checker_name" translatable="false">OmniVerte FUTO Spell Checker [Dev]</string>
+    <string name="omniverte_ime_settings" translatable="false">OmniVerte FUTO Keyboard Settings [Dev]</string>
+    <string name="omniverte_spell_checker_settings" translatable="false">OmniVerte FUTO Spell Checker Settings [Dev]</string>
 </resources>

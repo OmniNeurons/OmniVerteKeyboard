@@ -1,0 +1,104 @@
+# OmniVerte FUTO Keyboard: build a signed release APK and publish it as a GitHub Release.
+#
+# Trigger: push a tag like v1.0.0 (or run manually from the Actions tab with a version).
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   KEYSTORE_BASE64     base64 of omniverte-release.jks
+#   KEYSTORE_PASSWORD   store password
+#   KEY_ALIAS           key alias (omniverte)
+#   KEY_PASSWORD        key password
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version without the leading v, e.g. 1.0.1"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost
+          df -h /
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # versionCode = first-parent commit count of master
+          submodules: recursive
+          lfs: true
+
+      - name: Fetch LFS objects of submodules
+        run: git submodule foreach --recursive 'git lfs pull || true'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then V="${{ github.event.inputs.version }}"; else V="${GITHUB_REF_NAME#v}"; fi
+          CODE=$(git rev-list --first-parent --count HEAD)
+          echo "name=$V" >> "$GITHUB_OUTPUT"
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "VERSION_NAME=$V" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$CODE" >> "$GITHUB_ENV"
+          echo "Version $V ($CODE)"
+
+      - name: Signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || { echo "KEYSTORE_BASE64 secret is missing"; exit 1; }
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          {
+            echo "storeFile=$RUNNER_TEMP/release.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Build
+        run: ./gradlew assembleStableRelease --no-daemon --console=plain
+
+      - name: Unit tests (Gemini engine)
+        run: ./gradlew :voiceinput-shared:testDebugUnitTest --no-daemon --console=plain
+
+      - name: Collect APK
+        run: |
+          APK=$(ls build/outputs/apk/stable/release/*.apk | head -1)
+          OUT="OmniVerteFUTOKeyboard-${VERSION_NAME}.apk"
+          cp "$APK" "$OUT"
+          sha256sum "$OUT" | tee "$OUT.sha256"
+          echo "APK=$OUT" >> "$GITHUB_ENV"
+
+      - name: Remove signing key
+        if: always()
+        run: rm -f keystore.properties "$RUNNER_TEMP/release.jks"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.name }}
+          name: OmniVerte FUTO Keyboard ${{ steps.version.outputs.name }}
+          files: |
+            ${{ env.APK }}
+            ${{ env.APK }}.sha256
+          generate_release_notes: true

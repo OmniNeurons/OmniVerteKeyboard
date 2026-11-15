@@ -1,4 +1,4 @@
-# OmniVerte Keyboard
+# OmniVerte FUTO Keyboard
 
 **A modified version of [FUTO Keyboard](https://keyboard.futo.tech/).** It keeps FUTO's typing,
 swipe and predictions as they are and replaces the voice input engine with
@@ -53,7 +53,7 @@ predictions never leave the device.
 
 1. Download the APK from [Releases](../../releases), or add this repository to
    [Obtainium](https://github.com/ImranR98/Obtainium) to get updates automatically.
-2. Enable *OmniVerte Keyboard* in Android's keyboard settings and select it.
+2. Enable *OmniVerte FUTO Keyboard* in Android's keyboard settings and select it.
 3. Get a free API key at [Google AI Studio](https://aistudio.google.com/apikey).
 4. Open the keyboard settings, go to *Voice input* → *Gemini voice input*, then tap
    *Paste from clipboard* and *Check key*.
@@ -84,7 +84,7 @@ You need JDK 17 or 21 (not 25), Android SDK 35, NDK `28.2.13676358` and Python o
 On Windows, set `PYTHONUTF8=1`.
 
 ```
-./gradlew assembleUnstableDebug     # dev build, "OmniVerte Keyboard [Dev]"
+./gradlew assembleUnstableDebug     # dev build, "OmniVerte FUTO Keyboard [Dev]"
 ./gradlew assembleStableRelease     # release build; signing via keystore.properties
 ./gradlew :voiceinput-shared:testDebugUnitTest   # JVM tests for the Gemini engine
 ```
