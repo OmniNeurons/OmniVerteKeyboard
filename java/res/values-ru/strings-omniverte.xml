@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OmniVerte: Russian texts for the Gemini voice engine settings. -->
+<resources>
+    <string name="omniverte_gemini_key_title" translatable="false">Голосовой ввод Gemini</string>
+    <string name="omniverte_gemini_key_not_set" translatable="false">Ключа нет: голос распознаёт локальная модель Whisper. С ключом аудио отправляется в Google.</string>
+    <string name="omniverte_gemini_key_set" translatable="false">Ключ сохранён (%1$s). Голос распознаёт Google Gemini, без сети — Whisper.</string>
+    <string name="omniverte_gemini_key_field" translatable="false">API-ключ Gemini</string>
+    <string name="omniverte_gemini_key_show" translatable="false">Показать</string>
+    <string name="omniverte_gemini_key_hide" translatable="false">Скрыть</string>
+    <string name="omniverte_gemini_key_paste" translatable="false">Вставить из буфера</string>
+    <string name="omniverte_gemini_key_save" translatable="false">Сохранить</string>
+    <string name="omniverte_gemini_key_check" translatable="false">Проверить ключ</string>
+    <string name="omniverte_gemini_key_remove" translatable="false">Удалить ключ</string>
+    <string name="omniverte_gemini_key_saved" translatable="false">Ключ сохранён.</string>
+    <string name="omniverte_gemini_key_pasted" translatable="false">Ключ сохранён, буфер обмена очищен.</string>
+    <string name="omniverte_gemini_key_removed" translatable="false">Ключ удалён.</string>
+    <string name="omniverte_gemini_key_clipboard_empty" translatable="false">В буфере обмена нет текста.</string>
+    <string name="omniverte_gemini_key_checking" translatable="false">Проверяю…</string>
+    <string name="omniverte_gemini_key_ok" translatable="false">Ключ работает.</string>
+</resources>

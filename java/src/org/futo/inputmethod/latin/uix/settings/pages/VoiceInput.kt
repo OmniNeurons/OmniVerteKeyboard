@@ -56,6 +56,14 @@ val VoiceInputMenu = UserSettingsMenu(
     title = R.string.voice_input_settings_title,
     navPath = "voiceInput", registerNavPath = true,
     settings = listOf(
+        // OmniVerte: Gemini API key (manual entry / paste from clipboard)
+        UserSetting(
+            name = R.string.omniverte_gemini_key_title,
+            visibilityCheck = visibilityCheckNotSystemVoiceInput
+        ) {
+            GeminiApiKeySetting()
+        },
+
         UserSetting(
             name = R.string.voice_input_settings_backend_system,
             searchTagList = listOf(

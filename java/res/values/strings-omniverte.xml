@@ -9,4 +9,21 @@
     <string name="omniverte_spell_checker_name" translatable="false">OmniVerte Spell Checker</string>
     <string name="omniverte_ime_settings" translatable="false">OmniVerte Keyboard Settings</string>
     <string name="omniverte_spell_checker_settings" translatable="false">OmniVerte Spell Checker Settings</string>
+    <!-- Gemini voice engine: API key on the voice input settings page -->
+    <string name="omniverte_gemini_key_title" translatable="false">Gemini voice input</string>
+    <string name="omniverte_gemini_key_not_set" translatable="false">No API key: voice input uses the local Whisper model. Audio is sent to Google once a key is set.</string>
+    <string name="omniverte_gemini_key_set" translatable="false">API key saved (%1$s). Voice input streams audio to Google Gemini; offline it falls back to Whisper.</string>
+    <string name="omniverte_gemini_key_field" translatable="false">Gemini API key</string>
+    <string name="omniverte_gemini_key_show" translatable="false">Show</string>
+    <string name="omniverte_gemini_key_hide" translatable="false">Hide</string>
+    <string name="omniverte_gemini_key_paste" translatable="false">Paste from clipboard</string>
+    <string name="omniverte_gemini_key_save" translatable="false">Save</string>
+    <string name="omniverte_gemini_key_check" translatable="false">Check key</string>
+    <string name="omniverte_gemini_key_remove" translatable="false">Remove key</string>
+    <string name="omniverte_gemini_key_saved" translatable="false">Key saved.</string>
+    <string name="omniverte_gemini_key_pasted" translatable="false">Key saved, the clipboard has been cleared.</string>
+    <string name="omniverte_gemini_key_removed" translatable="false">Key removed.</string>
+    <string name="omniverte_gemini_key_clipboard_empty" translatable="false">The clipboard has no text.</string>
+    <string name="omniverte_gemini_key_checking" translatable="false">Checking…</string>
+    <string name="omniverte_gemini_key_ok" translatable="false">The key works.</string>
 </resources>

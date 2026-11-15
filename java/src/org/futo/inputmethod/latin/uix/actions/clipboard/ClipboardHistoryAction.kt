@@ -466,6 +466,9 @@ class ClipboardHistoryManager(val context: Context, val coroutineScope: Lifecycl
 
     companion object {
         val onClipboardImportedFlow = MutableSharedFlow<File>()
+
+        // OmniVerte: texts to drop from the history (the Gemini key pasted into settings)
+        val forgetTextFlow = MutableSharedFlow<String>(extraBufferCapacity = 4)
     }
 
     private val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -648,6 +651,14 @@ class ClipboardHistoryManager(val context: Context, val coroutineScope: Lifecycl
         }
 
     init {
+        coroutineScope.launch {
+            forgetTextFlow.collect { text ->
+                withContext(Dispatchers.Main) {
+                    if (clipboardHistory.removeAll { it.text?.trim() == text }) saveClipboard()
+                }
+            }
+        }
+
         coroutineScope.launch {
             loadClipboard()
 
