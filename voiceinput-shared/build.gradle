@@ -130,4 +130,9 @@ dependencies {
     implementation(name:'vad-release', ext:'aar')
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1'
+
+    // OmniVerte: Gemini Live WebSocket + JVM unit tests for the gemini package
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1'
 }
