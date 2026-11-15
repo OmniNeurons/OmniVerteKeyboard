@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  OmniVerte Keyboard: names of this modified build of FUTO Keyboard.
+  Kept in a separate, untranslated file so the FUTO translations (which
+  override english_ime_name & co. per locale) never bring the FUTO name back.
+-->
+<resources>
+    <string name="omniverte_ime_name" translatable="false">OmniVerte Keyboard</string>
+    <string name="omniverte_spell_checker_name" translatable="false">OmniVerte Spell Checker</string>
+    <string name="omniverte_ime_settings" translatable="false">OmniVerte Keyboard Settings</string>
+    <string name="omniverte_spell_checker_settings" translatable="false">OmniVerte Spell Checker Settings</string>
+</resources>

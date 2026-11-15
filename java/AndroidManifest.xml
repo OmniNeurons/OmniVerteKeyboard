@@ -35,7 +35,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove"/>
 
-    <application android:label="@string/english_ime_name"
+    <application android:label="@string/omniverte_ime_name"
          android:icon="@mipmap/ic_launcher"
          android:roundIcon="@mipmap/ic_launcher_round"
          android:supportsRtl="true"
@@ -46,7 +46,7 @@
 
         <!-- Services -->
         <service android:name=".LatinIME"
-             android:label="@string/english_ime_name"
+             android:label="@string/omniverte_ime_name"
              android:permission="android.permission.BIND_INPUT_METHOD"
              android:directBootAware="true"
              android:exported="true">
@@ -59,7 +59,7 @@
 
         <!--
         <service android:name=".spellcheck.AndroidSpellCheckerService"
-             android:label="@string/spell_checker_service_name"
+             android:label="@string/omniverte_spell_checker_name"
              android:permission="android.permission.BIND_TEXT_SERVICE"
              android:exported="true">
             <intent-filter>
@@ -135,7 +135,7 @@
 
         <activity android:name=".spellcheck.SpellCheckerSettingsActivity"
              android:theme="@style/platformSettingsTheme"
-             android:label="@string/android_spell_checker_settings"
+             android:label="@string/omniverte_spell_checker_settings"
              android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
