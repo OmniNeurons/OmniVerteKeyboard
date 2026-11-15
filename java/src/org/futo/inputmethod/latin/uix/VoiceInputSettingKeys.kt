@@ -89,3 +89,13 @@ val GEMINI_SILENCE_STOP_SECONDS = SettingsKey(
     key = intPreferencesKey("omniverte_gemini_silence_stop_seconds"),
     default = 5
 )
+
+/** User's terms & names for Gemini customVocabulary, one per line. Empty by default. */
+val GEMINI_TERMS = SettingsKey(
+    key = androidx.datastore.preferences.core.stringPreferencesKey("omniverte_gemini_terms"),
+    default = ""
+)
+
+/** Parsed GEMINI_TERMS: trimmed, non-empty, de-duplicated, in the user's order. */
+fun parseGeminiTerms(raw: String): List<String> =
+    raw.lines().map { it.trim() }.filter { it.isNotEmpty() }.distinct()

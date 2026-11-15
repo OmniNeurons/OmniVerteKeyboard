@@ -39,6 +39,8 @@ import org.futo.inputmethod.latin.uix.DISALLOW_SYMBOLS
 import org.futo.inputmethod.latin.uix.ENABLE_SOUND
 import org.futo.inputmethod.latin.uix.GEMINI_CLEAN_FILLERS
 import org.futo.inputmethod.latin.uix.GEMINI_SILENCE_STOP_SECONDS
+import org.futo.inputmethod.latin.uix.GEMINI_TERMS
+import org.futo.inputmethod.latin.uix.parseGeminiTerms
 import org.futo.inputmethod.latin.uix.GEMINI_VOICE_ENABLED
 import org.futo.inputmethod.latin.uix.KeyboardManagerForAction
 import org.futo.inputmethod.latin.uix.PREFER_BLUETOOTH
@@ -150,6 +152,7 @@ private class VoiceInputActionWindow(
         val animateBubble = context.getSetting(ANIMATE_BUBBLE)
         val cleanFillers = context.getSetting(GEMINI_CLEAN_FILLERS)
         val silenceStopSeconds = context.getSetting(GEMINI_SILENCE_STOP_SECONDS)
+        val geminiTerms = parseGeminiTerms(context.getSetting(GEMINI_TERMS))
 
         // OmniVerte: without a model the run configuration needs a placeholder;
         // GeminiConfig.whisperFallback = false keeps AudioRecognizer off it.
@@ -189,7 +192,8 @@ private class VoiceInputActionWindow(
                     // Current layout first, then every other enabled keyboard language,
                     // so mixed speech works without switching layouts.
                     languages = (locales + enabledLocales()).map { it.language }.distinct(),
-                    vocabulary = glossary,
+                    // The user's own terms first: buildSetup keeps the first 100.
+                    vocabulary = (geminiTerms + glossary).distinct(),
                     cleanFillers = cleanFillers,
                     silenceStopMs = silenceStopSeconds * 1000L,
                     whisperFallback = model != null

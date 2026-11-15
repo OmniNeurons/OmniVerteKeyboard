@@ -34,4 +34,10 @@
     <string name="omniverte_gemini_silence_stop_value" translatable="false">%1$d s</string>
     <string name="omniverte_modified_notice" translatable="false">OmniVerte Keyboard is a modified version of FUTO Keyboard, made by OmniNeurons. It is not affiliated with or endorsed by FUTO.</string>
     <string name="omniverte_based_on" translatable="false">Voice input modelled on OmniVerte · omniverte.ai</string>
+    <string name="omniverte_gemini_terms" translatable="false">Terms for Gemini</string>
+    <string name="omniverte_gemini_terms_subtitle" translatable="false">Names and terms Gemini should recognize and spell as written</string>
+    <string name="omniverte_gemini_terms_help" translatable="false">One term per line: product and company names, people, jargon. Gemini uses them as hints and spells them exactly as written here. Words from your personal dictionary are added after them.</string>
+    <string name="omniverte_gemini_terms_field" translatable="false">Terms, one per line</string>
+    <string name="omniverte_gemini_terms_count" translatable="false">%1$d terms (Gemini uses up to %2$d)</string>
+    <string name="omniverte_gemini_terms_saved" translatable="false">Saved. Applies from the next voice input.</string>
 </resources>

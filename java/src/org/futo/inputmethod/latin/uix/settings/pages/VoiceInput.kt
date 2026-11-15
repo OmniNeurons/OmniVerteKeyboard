@@ -94,6 +94,13 @@ val VoiceInputMenu = UserSettingsMenu(
             )
         },
 
+        userSettingNavigationItem(
+            title = R.string.omniverte_gemini_terms,
+            subtitle = R.string.omniverte_gemini_terms_subtitle,
+            style = NavigationItemStyle.Misc,
+            navigateTo = GeminiTermsMenu.navPath
+        ).copy(visibilityCheck = visibilityCheckNotSystemVoiceInput),
+
         UserSetting(
             name = R.string.voice_input_settings_backend_system,
             searchTagList = listOf(
