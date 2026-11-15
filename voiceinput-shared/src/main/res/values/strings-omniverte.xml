@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OmniVerte: Gemini voice engine messages (not part of FUTO's Pontoon translations). -->
+<resources>
+    <string name="omniverte_gemini_error_auth" translatable="false">Gemini: the API key is not valid</string>
+    <string name="omniverte_gemini_error_quota" translatable="false">Gemini: quota exhausted</string>
+    <string name="omniverte_gemini_error_rate" translatable="false">Gemini: too many requests</string>
+    <string name="omniverte_gemini_error_network" translatable="false">Gemini: no connection</string>
+    <string name="omniverte_gemini_error_unknown" translatable="false">Gemini: request failed</string>
+    <string name="omniverte_gemini_fallback_local" translatable="false">%1$s — recognized offline</string>
+    <string name="omniverte_gemini_no_fallback" translatable="false">%1$s — no offline model for this language</string>
+    <string name="omniverte_engine_gemini" translatable="false">Gemini</string>
+    <string name="omniverte_engine_whisper" translatable="false">Whisper · on device</string>
+    <string name="omniverte_engine_whisper_fallback" translatable="false">Whisper · offline fallback</string>
+    <string name="omniverte_engine_gemini_failed" translatable="false">Gemini unavailable</string>
+</resources>

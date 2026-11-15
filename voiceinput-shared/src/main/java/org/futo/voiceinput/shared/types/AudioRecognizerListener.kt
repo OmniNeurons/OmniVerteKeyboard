@@ -6,6 +6,11 @@ enum class MagnitudeState {
     NOT_TALKED_YET, MIC_MAY_BE_BLOCKED, TALKING
 }
 
+/** OmniVerte: which engine is transcribing the current take (shown in the voice window). */
+enum class VoiceEngine {
+    GEMINI, WHISPER, WHISPER_FALLBACK, GEMINI_FAILED
+}
+
 interface AudioRecognizerListener {
     fun cancelled()
     fun finished(result: String)
@@ -21,4 +26,7 @@ interface AudioRecognizerListener {
     fun updateMagnitude(magnitude: Float, state: MagnitudeState)
 
     fun processing()
+
+    // OmniVerte
+    fun engineChanged(engine: VoiceEngine) {}
 }

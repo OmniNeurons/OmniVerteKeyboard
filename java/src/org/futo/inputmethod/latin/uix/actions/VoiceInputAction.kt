@@ -26,6 +26,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.futo.inputmethod.latin.ATLCompat
 import org.futo.inputmethod.latin.R
+import org.futo.inputmethod.latin.Subtypes
+import org.futo.inputmethod.latin.SubtypesSetting
+import org.futo.inputmethod.latin.uix.getSettingBlocking
 import org.futo.inputmethod.latin.uix.ANIMATE_BUBBLE
 import org.futo.inputmethod.latin.uix.AUDIO_FOCUS
 import org.futo.inputmethod.latin.uix.Action
@@ -57,6 +60,8 @@ import org.futo.voiceinput.shared.types.Language
 import org.futo.voiceinput.shared.types.ModelLoader
 import org.futo.voiceinput.shared.types.getLanguageFromWhisperString
 import org.futo.voiceinput.shared.ui.MicrophoneDeviceState
+import org.futo.voiceinput.shared.BUILTIN_ENGLISH_MODEL
+import org.futo.voiceinput.shared.gemini.GeminiConfig
 import org.futo.voiceinput.shared.whisper.DecodingConfiguration
 import org.futo.voiceinput.shared.whisper.ModelManager
 import org.futo.voiceinput.shared.whisper.MultiModelRunConfiguration
@@ -115,11 +120,21 @@ class VoiceInputPersistentState(val manager: KeyboardManagerForAction) : Persist
 
 private class VoiceInputActionWindow(
     val manager: KeyboardManagerForAction, val state: VoiceInputPersistentState,
-    val model: ModelLoader, val locales: List<Locale>
+    // OmniVerte: null when no Whisper model fits the language — allowed only with
+    // a Gemini key, Whisper is then just an unavailable fallback.
+    val model: ModelLoader?, val locales: List<Locale>,
+    val geminiApiKey: String? = null
 ) : ActionWindow(), RecognizerViewListener {
     val context = manager.getContext()
 
     private var shouldPlaySounds: Boolean = false
+
+    // OmniVerte: all languages added in "Languages & Models".
+    private fun enabledLocales(): List<Locale> = try {
+        context.getSettingBlocking(SubtypesSetting).map { Subtypes.getLocale(it.split(":")[0]) }
+    } catch (_: Exception) {
+        emptyList()
+    }
     private fun loadSettings(): RecognizerViewSettings {
         val enableSound = context.getSetting(ENABLE_SOUND)
         val verboseFeedback = false//context.getSetting(VERBOSE_PROGRESS)
@@ -131,7 +146,9 @@ private class VoiceInputActionWindow(
         val usePersonalDict = context.getSetting(USE_PERSONAL_DICT)
         val animateBubble = context.getSetting(ANIMATE_BUBBLE)
 
-        val primaryModel = model
+        // OmniVerte: without a model the run configuration needs a placeholder;
+        // GeminiConfig.whisperFallback = false keeps AudioRecognizer off it.
+        val primaryModel = model ?: BUILTIN_ENGLISH_MODEL
         val languageSpecificModels = mutableMapOf<Language, ModelLoader>()
         val allowedLanguages = locales.mapNotNull { getLanguageFromWhisperString(it.language) }.toSet()
         val glossary = if(usePersonalDict) {
@@ -160,7 +177,17 @@ private class VoiceInputActionWindow(
                 requestAudioFocus = requestAudioFocus,
                 canExpandSpace = canExpandSpace,
                 useVADAutoStop = useVAD
-            )
+            ),
+            gemini = geminiApiKey?.let { key ->
+                GeminiConfig(
+                    apiKey = key,
+                    // Current layout first, then every other enabled keyboard language,
+                    // so mixed speech works without switching layouts.
+                    languages = (locales + enabledLocales()).map { it.language }.distinct(),
+                    vocabulary = glossary,
+                    whisperFallback = model != null
+                )
+            }
         )
     }
 
@@ -311,13 +338,14 @@ val VoiceInputAction = Action(icon = R.drawable.mic_fill,
         val locales = manager.getActiveLocales()
 
         val model = ResourceHelper.tryFindingVoiceInputModelForLocale(manager.getContext(), locales.firstOrNull() ?: Locale.ROOT)
+        val geminiApiKey = GeminiVoiceKey.read(manager.getContext())
 
-        if(model == null) {
+        if(model == null && geminiApiKey == null) {
             VoiceInputNoModelWindow(locales.firstOrNull() ?: Locale.ROOT)
         } else {
             VoiceInputActionWindow(
                 manager = manager, state = persistentState as VoiceInputPersistentState,
-                locales = locales, model = model
+                locales = locales, model = model, geminiApiKey = geminiApiKey
             )
         }
     }

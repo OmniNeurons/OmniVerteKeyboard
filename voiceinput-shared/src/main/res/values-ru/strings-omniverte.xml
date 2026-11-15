@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="omniverte_gemini_error_auth" translatable="false">Gemini: неверный API-ключ</string>
+    <string name="omniverte_gemini_error_quota" translatable="false">Gemini: квота исчерпана</string>
+    <string name="omniverte_gemini_error_rate" translatable="false">Gemini: слишком много запросов</string>
+    <string name="omniverte_gemini_error_network" translatable="false">Gemini: нет связи</string>
+    <string name="omniverte_gemini_error_unknown" translatable="false">Gemini: ошибка запроса</string>
+    <string name="omniverte_gemini_fallback_local" translatable="false">%1$s — распознано офлайн</string>
+    <string name="omniverte_gemini_no_fallback" translatable="false">%1$s — нет офлайн-модели для этого языка</string>
+    <string name="omniverte_engine_gemini" translatable="false">Gemini</string>
+    <string name="omniverte_engine_whisper" translatable="false">Whisper · на устройстве</string>
+    <string name="omniverte_engine_whisper_fallback" translatable="false">Whisper · офлайн-резерв</string>
+    <string name="omniverte_engine_gemini_failed" translatable="false">Gemini недоступен</string>
+</resources>

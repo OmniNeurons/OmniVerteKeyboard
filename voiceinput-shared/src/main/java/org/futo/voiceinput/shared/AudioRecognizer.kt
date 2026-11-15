@@ -16,6 +16,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.konovalov.vad.Vad
 import com.konovalov.vad.config.FrameSize
@@ -29,12 +30,19 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import org.futo.voiceinput.shared.gemini.GeminiConfig
+import org.futo.voiceinput.shared.gemini.GeminiLive
+import org.futo.voiceinput.shared.gemini.GeminiLiveException
+import org.futo.voiceinput.shared.gemini.GeminiLiveSession
+import org.futo.voiceinput.shared.gemini.TextCleanup
+import org.futo.voiceinput.shared.gemini.messageRes
 import org.futo.voiceinput.shared.ggml.InferenceCancelledException
 import org.futo.voiceinput.shared.ggml.InvalidModelException
 import org.futo.voiceinput.shared.types.AudioRecognizerListener
 import org.futo.voiceinput.shared.types.InferenceState
 import org.futo.voiceinput.shared.types.Language
 import org.futo.voiceinput.shared.types.MagnitudeState
+import org.futo.voiceinput.shared.types.VoiceEngine
 import org.futo.voiceinput.shared.types.ModelInferenceCallback
 import org.futo.voiceinput.shared.types.ModelLoader
 import org.futo.voiceinput.shared.ui.MicrophoneDeviceState
@@ -87,10 +95,14 @@ data class RecordingSettings(
 data class AudioRecognizerSettings(
     val modelRunConfiguration: MultiModelRunConfiguration,
     val decodingConfiguration: DecodingConfiguration,
-    val recordingConfiguration: RecordingSettings
+    val recordingConfiguration: RecordingSettings,
+    // OmniVerte: non-null = stream to Gemini Live, Whisper only as a fallback
+    val gemini: GeminiConfig? = null
 )
 
 class ModelDoesNotExistException(val models: List<ModelLoader>) : Throwable()
+
+private const val TAG = "AudioRecognizer"
 
 class AudioRecognizer(
     private val context: Context,
@@ -104,8 +116,19 @@ class AudioRecognizer(
 
     private val modelRunner = MultiModelRunner(modelManager)
 
-    private val canExpandSpace = settings.recordingConfiguration.canExpandSpace
+    // OmniVerte: Gemini engine state
+    private val gemini = settings.gemini
+    private var session: GeminiLiveSession? = null
+
+    // Gemini takes are not bound by Whisper's 30 s window, but the fallback
+    // replays the buffer, so it must keep growing.
+    private val canExpandSpace = settings.recordingConfiguration.canExpandSpace || gemini != null
     private val useVAD = settings.recordingConfiguration.useVADAutoStop
+
+    // VAD frames are 480 samples = 30 ms. FUTO's local default: 66 (~2 s).
+    private val silenceStopFrames = gemini?.let {
+        (maxOf(it.silenceStopMs, GeminiConfig.MIN_SILENCE_STOP_MS) / 30).toInt()
+    } ?: 66
 
     private var floatSamples: FloatBuffer = FloatBuffer.allocate(16000 * 30)
     private var recorderJob: Job? = null
@@ -211,8 +234,19 @@ class AudioRecognizer(
         }
     }
 
-    init {
+    // Stock FUTO: a missing model is an error (shows the "no model" screen).
+    // Gemini: the model is only the fallback; without it a failed take reports
+    // the error instead.
+    private val whisperAvailable: Boolean = if (gemini == null) {
         verifyModelsExist()
+        true
+    } else {
+        gemini.whisperFallback && try {
+            verifyModelsExist()
+            true
+        } catch (_: ModelDoesNotExistException) {
+            false
+        }
     }
 
     fun reset() {
@@ -224,6 +258,9 @@ class AudioRecognizer(
 
         modelJob?.cancel()
         isRecording = false
+
+        session?.close()
+        session = null
 
         modelRunner.cancelAll()
 
@@ -335,7 +372,7 @@ class AudioRecognizer(
 
             var isRunningOutOfSpace = (floatSamples.remaining() < nRead.coerceAtLeast(1600)) && !expandSpaceIfAllowed()
 
-            val hasNotTalkedRecently = hasTalked && (numConsecutiveNonSpeech > 66) && useVAD
+            val hasNotTalkedRecently = hasTalked && (numConsecutiveNonSpeech > silenceStopFrames) && useVAD
             if (isRunningOutOfSpace || hasNotTalkedRecently) {
                 yield()
                 withContext(Dispatchers.Main) {
@@ -375,6 +412,7 @@ class AudioRecognizer(
             }
 
             floatSamples.put(samples.sliceArray(0 until nRead).map { it.toFloat() / Short.MAX_VALUE.toFloat() }.toFloatArray())
+            session?.sendPcm(samples, nRead)
 
             // Don't set hasTalked if the start sound may still be playing, otherwise on some
             // devices the rms just explodes and `hasTalked` is always true
@@ -432,6 +470,7 @@ class AudioRecognizer(
                         break
                     }
                     floatSamples.put(samples.sliceArray(0 until nRead2).map { it.toFloat() / Short.MAX_VALUE.toFloat() }.toFloatArray())
+                    session?.sendPcm(samples, nRead2)
                 } else {
                     break
                 }
@@ -511,6 +550,13 @@ class AudioRecognizer(
 
         listener.recordingStarted(device)
 
+        if (gemini != null) {
+            listener.engineChanged(VoiceEngine.GEMINI)
+            startGeminiSession(gemini)
+            return
+        }
+        listener.engineChanged(VoiceEngine.WHISPER)
+
         loadModelJob = lifecycleScope.launch {
             withContext(Dispatchers.Default) {
                 try {
@@ -521,6 +567,94 @@ class AudioRecognizer(
                         listener.modelLoadingFailed()
                     }
                 }
+            }
+        }
+    }
+
+    // OmniVerte: open the Live session alongside the recorder (the start sound
+    // covers the connect). Whisper is warmed up only once the session fails.
+    private fun startGeminiSession(config: GeminiConfig) {
+        session?.close()
+        Log.i(TAG, "Gemini session: $config")   // GeminiConfig.toString() omits the key
+        var self: GeminiLiveSession? = null
+        val s = GeminiLiveSession(
+            apiKey = config.apiKey,
+            setup = GeminiLive.buildSetup(config.languages, config.vocabulary),
+            listener = object : GeminiLiveSession.Listener {
+                override fun onPartial(text: String) {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        if (session === self && isRecording) {
+                            listener.partialResult(TextCleanup.forDictation(text, config.cleanFillers))
+                        }
+                    }
+                }
+
+                override fun onFailed(error: GeminiLiveException) {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        if (session !== self) return@launch
+                        listener.engineChanged(
+                            if (whisperAvailable) VoiceEngine.WHISPER_FALLBACK else VoiceEngine.GEMINI_FAILED
+                        )
+                        if (whisperAvailable) preloadFallback()
+                    }
+                }
+            },
+            log = { Log.i(TAG, it) }
+        )
+        self = s
+        session = s
+        s.start()
+    }
+
+    private fun preloadFallback() {
+        if (loadModelJob != null) return
+        loadModelJob = lifecycleScope.launch {
+            withContext(Dispatchers.Default) {
+                try {
+                    preloadModels()
+                } catch (e: InvalidModelException) {
+                    Log.w(TAG, "Whisper fallback model failed to load", e)
+                }
+            }
+        }
+    }
+
+    /** Gemini path of runModel(). Returns false when the take must go to Whisper. */
+    private suspend fun runGemini(config: GeminiConfig, s: GeminiLiveSession): Boolean {
+        val error = try {
+            val text = TextCleanup.forDictation(s.finish(), config.cleanFillers)
+            Log.i(TAG, "Gemini take: ${text.length} chars, usedPartial=${s.usedPartial}")
+            deliver(text)
+            return true
+        } catch (e: GeminiLiveException) {
+            Log.w(TAG, "Gemini take failed (${e.userKind}): ${e.message}")
+            e
+        }
+
+        val reason = context.getString(error.userKind.messageRes())
+        val message = context.getString(
+            if (whisperAvailable) R.string.omniverte_gemini_fallback_local
+            else R.string.omniverte_gemini_no_fallback,
+            reason
+        )
+        withContext(Dispatchers.Main) {
+            listener.engineChanged(
+                if (whisperAvailable) VoiceEngine.WHISPER_FALLBACK else VoiceEngine.GEMINI_FAILED
+            )
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        }
+        if (!whisperAvailable) {
+            deliver("")
+            return true
+        }
+        return false
+    }
+
+    private fun deliver(text: String) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                yield()
+                listener.finished(text)
             }
         }
     }
@@ -541,6 +675,9 @@ class AudioRecognizer(
     }
 
     private suspend fun runModel() {
+        val s = session
+        if (gemini != null && s != null && runGemini(gemini, s)) return
+
         loadModelJob?.let {
             if (it.isActive) {
                 println("Model was not finished loading...")

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableFloatStateOf
@@ -22,6 +23,7 @@ import org.futo.voiceinput.shared.types.AudioRecognizerListener
 import org.futo.voiceinput.shared.types.InferenceState
 import org.futo.voiceinput.shared.types.Language
 import org.futo.voiceinput.shared.types.MagnitudeState
+import org.futo.voiceinput.shared.types.VoiceEngine
 import org.futo.voiceinput.shared.ui.InnerRecognize
 import org.futo.voiceinput.shared.ui.MicrophoneDeviceState
 import org.futo.voiceinput.shared.ui.PartialDecodingResult
@@ -38,7 +40,9 @@ data class RecognizerViewSettings(
 
     val modelRunConfiguration: MultiModelRunConfiguration,
     val decodingConfiguration: DecodingConfiguration,
-    val recordingConfiguration: RecordingSettings
+    val recordingConfiguration: RecordingSettings,
+    // OmniVerte: Gemini Live engine (null = local Whisper only)
+    val gemini: org.futo.voiceinput.shared.gemini.GeminiConfig? = null
 )
 
 private val VerboseAnnotations = hashMapOf(
@@ -92,6 +96,9 @@ class RecognizerView(
     private val partialDecodingText = mutableStateOf("")
     private val currentViewState = mutableStateOf(CurrentView.LoadingCircle)
 
+    // OmniVerte: engine badge
+    private val engineState = mutableStateOf<VoiceEngine?>(null)
+
     private val currentDeviceState = mutableStateOf(MicrophoneDeviceState(
         bluetoothAvailable = false,
         bluetoothActive = false,
@@ -102,6 +109,31 @@ class RecognizerView(
 
     @Composable
     fun Content() {
+        // OmniVerte: overlay the engine badge without changing FUTO's layout.
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.align(Alignment.Center)) {
+                FutoContent()
+            }
+            engineState.value?.let { engine ->
+                Text(
+                    stringResource(when (engine) {
+                        VoiceEngine.GEMINI -> R.string.omniverte_engine_gemini
+                        VoiceEngine.WHISPER -> R.string.omniverte_engine_whisper
+                        VoiceEngine.WHISPER_FALLBACK -> R.string.omniverte_engine_whisper_fallback
+                        VoiceEngine.GEMINI_FAILED -> R.string.omniverte_engine_gemini_failed
+                    }),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 4.dp)
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun FutoContent() {
         when (currentViewState.value) {
             CurrentView.LoadingCircle -> {
                 Column {
@@ -231,6 +263,10 @@ class RecognizerView(
             currentViewState.value = CurrentView.InnerRecognize
         }
 
+        override fun engineChanged(engine: VoiceEngine) {
+            engineState.value = engine
+        }
+
         override fun processing() {
             loadingCircleText.value = context.getString(R.string.processing)
             currentViewState.value = CurrentView.LoadingCircle
@@ -245,7 +281,8 @@ class RecognizerView(
         settings = AudioRecognizerSettings(
             modelRunConfiguration = settings.modelRunConfiguration,
             decodingConfiguration = settings.decodingConfiguration,
-            recordingConfiguration = settings.recordingConfiguration
+            recordingConfiguration = settings.recordingConfiguration,
+            gemini = settings.gemini
         )
     )
 
